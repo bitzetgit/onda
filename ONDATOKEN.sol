@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Unlicensed
 
-pragma solidity ^ 0.8.7;
+pragma solidity 0.8.7;
 
 /**
  * @title SafeMath
@@ -8,42 +8,144 @@ pragma solidity ^ 0.8.7;
  */
 library SafeMath {
     /**
-    * @dev Multiplies two numbers, throws on overflow.
-    */
+     * @dev Returns the addition of two unsigned integers, reverting on
+     * overflow.
+     *
+     * Counterpart to Solidity's `+` operator.
+     *
+     * Requirements:
+     *
+     * - Addition cannot overflow.
+     */
+    function add(uint256 a, uint256 b) internal pure returns (uint256) {
+        uint256 c = a + b;
+        require(c >= a, "SafeMath: addition overflow");
+
+        return c;
+    }
+
+    /**
+     * @dev Returns the subtraction of two unsigned integers, reverting on
+     * overflow (when the result is negative).
+     *
+     * Counterpart to Solidity's `-` operator.
+     *
+     * Requirements:
+     *
+     * - Subtraction cannot overflow.
+     */
+    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+        return sub(a, b, "SafeMath: subtraction overflow");
+    }
+
+    /**
+     * @dev Returns the subtraction of two unsigned integers, reverting with custom message on
+     * overflow (when the result is negative).
+     *
+     * Counterpart to Solidity's `-` operator.
+     *
+     * Requirements:
+     *
+     * - Subtraction cannot overflow.
+     */
+    function sub(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+        require(b <= a, errorMessage);
+        uint256 c = a - b;
+
+        return c;
+    }
+
+    /**
+     * @dev Returns the multiplication of two unsigned integers, reverting on
+     * overflow.
+     *
+     * Counterpart to Solidity's `*` operator.
+     *
+     * Requirements:
+     *
+     * - Multiplication cannot overflow.
+     */
     function mul(uint256 a, uint256 b) internal pure returns (uint256) {
+        // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
+        // benefit is lost if 'b' is also tested.
+        // See: https://github.com/OpenZeppelin/openzeppelin-contracts/pull/522
         if (a == 0) {
             return 0;
         }
+
         uint256 c = a * b;
-        assert(c / a == b);
+        require(c / a == b, "SafeMath: multiplication overflow");
+
         return c;
     }
 
     /**
-    * @dev Integer division of two numbers, truncating the quotient.
-    */
+     * @dev Returns the integer division of two unsigned integers. Reverts on
+     * division by zero. The result is rounded towards zero.
+     *
+     * Counterpart to Solidity's `/` operator. Note: this function uses a
+     * `revert` opcode (which leaves remaining gas untouched) while Solidity
+     * uses an invalid opcode to revert (consuming all remaining gas).
+     *
+     * Requirements:
+     *
+     * - The divisor cannot be zero.
+     */
     function div(uint256 a, uint256 b) internal pure returns (uint256) {
-        // assert(b > 0); // Solidity automatically throws when dividing by 0
+        return div(a, b, "SafeMath: division by zero");
+    }
+
+    /**
+     * @dev Returns the integer division of two unsigned integers. Reverts with custom message on
+     * division by zero. The result is rounded towards zero.
+     *
+     * Counterpart to Solidity's `/` operator. Note: this function uses a
+     * `revert` opcode (which leaves remaining gas untouched) while Solidity
+     * uses an invalid opcode to revert (consuming all remaining gas).
+     *
+     * Requirements:
+     *
+     * - The divisor cannot be zero.
+     */
+    function div(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+        require(b > 0, errorMessage);
         uint256 c = a / b;
         // assert(a == b * c + a % b); // There is no case in which this doesn't hold
+
         return c;
     }
 
     /**
-    * @dev Subtracts two numbers, throws on overflow (i.e. if subtrahend is greater than minuend).
-    */
-    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
-        assert(b <= a);
-        return a - b;
+     * @dev Returns the remainder of dividing two unsigned integers. (unsigned integer modulo),
+     * Reverts when dividing by zero.
+     *
+     * Counterpart to Solidity's `%` operator. This function uses a `revert`
+     * opcode (which leaves remaining gas untouched) while Solidity uses an
+     * invalid opcode to revert (consuming all remaining gas).
+     *
+     * Requirements:
+     *
+     * - The divisor cannot be zero.
+     */
+    function mod(uint256 a, uint256 b) internal pure returns (uint256) {
+        return mod(a, b, "SafeMath: modulo by zero");
     }
 
     /**
-    * @dev Adds two numbers, throws on overflow.
-    */
-    function add(uint256 a, uint256 b) internal pure returns (uint256) {
-        uint256 c = a + b;
-        assert(c >= a);
-        return c;
+     * @dev Returns the remainder of dividing two unsigned integers. (unsigned integer modulo),
+     * Reverts with custom message when dividing by zero.
+     *
+     * Counterpart to Solidity's `%` operator. This function uses a `revert`
+     * opcode (which leaves remaining gas untouched) while Solidity uses an
+     * invalid opcode to revert (consuming all remaining gas).
+     *
+     * Requirements:
+     *
+     * - The divisor cannot be zero.
+     */
+    function mod(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+        require(b != 0, errorMessage);
+        return a % b;
     }
 }
 
@@ -53,9 +155,9 @@ library SafeMath {
  * @dev see https://github.com/ethereum/EIPs/issues/179
  */
 abstract contract ERC20Basic {
-    function totalSupply() public view virtual returns (uint256);
-    function balanceOf(address who) public view virtual returns (uint256);
-    function transfer(address to, uint256 value) public virtual returns (bool);
+    function totalSupply() external view virtual returns (uint256);
+    function balanceOf(address who) external view virtual returns (uint256);
+    function transfer(address to, uint256 value) external virtual returns (bool);
     event Transfer(address indexed from, address indexed to, uint256 value);
 }
 
@@ -66,14 +168,14 @@ abstract contract ERC20Basic {
 contract BasicToken is ERC20Basic {
     using SafeMath for uint256;
 
-    mapping(address => uint256) balances;
+    mapping(address => uint256) internal balances;
 
-    uint256 totalSupply_;
+    uint256 internal totalSupply_;
 
     /**
     * @dev total number of tokens in existence
     */
-    function totalSupply() public view override returns(uint256) {
+    function totalSupply() external view override returns(uint256) {
         return totalSupply_;
     }
 
@@ -82,9 +184,9 @@ contract BasicToken is ERC20Basic {
     * @param _to The address to transfer to.
     * @param _value The amount to be transferred.
     */
-    function transfer(address _to, uint256 _value) public override returns(bool) {
-        require(_to != address(0));
-        require(_value <= balances[msg.sender]);
+    function transfer(address _to, uint256 _value) external override returns(bool) {
+        require(_to != address(0), "Recipient is zero address");
+        require(_value <= balances[msg.sender], "Not enough balance");
 
         // SafeMath.sub will throw if there is not enough balance.
         balances[msg.sender] = balances[msg.sender].sub(_value);
@@ -98,7 +200,7 @@ contract BasicToken is ERC20Basic {
     * @param _owner The address to query the the balance of.
     * @return An uint256 representing the amount owned by the passed address.
     */
-    function balanceOf(address _owner) public view override returns(uint256) {
+    function balanceOf(address _owner) external view override returns(uint256) {
         return balances[_owner];
     }
 }
@@ -108,9 +210,9 @@ contract BasicToken is ERC20Basic {
  * @dev see https://github.com/ethereum/EIPs/issues/20
  */
 abstract contract ERC20 is ERC20Basic {
-    function allowance(address owner, address spender) public view  virtual returns (uint256);
-    function transferFrom(address from, address to, uint256 value) public virtual returns (bool);
-    function approve(address spender, uint256 value) public virtual returns(bool);
+    function allowance(address owner, address spender) external view  virtual returns (uint256);
+    function transferFrom(address from, address to, uint256 value) external virtual returns (bool);
+    function approve(address spender, uint256 value) external virtual returns(bool);
     event Approval(address indexed owner, address indexed spender, uint256 value);
 }
 
@@ -130,10 +232,10 @@ contract StandardToken is ERC20, BasicToken {
      * @param _to address The address which you want to transfer to
      * @param _value uint256 the amount of tokens to be transferred
      */
-    function transferFrom(address _from, address _to, uint256 _value) public override returns (bool) {
-        require(_to != address(0));
-        require(_value <= balances[_from]);
-        require(_value <= allowed[_from][msg.sender]);
+    function transferFrom(address _from, address _to, uint256 _value) external override returns (bool) {
+        require(_to != address(0), "Recipient is zero address");
+        require(_value <= balances[_from], "Not enough balance");
+        require(_value <= allowed[_from][msg.sender], "Not enough allowance");
 
         balances[_from] = balances[_from].sub(_value);
         balances[_to] = balances[_to].add(_value);
@@ -152,7 +254,7 @@ contract StandardToken is ERC20, BasicToken {
      * @param _spender The address which will spend the funds.
      * @param _value The amount of tokens to be spent.
      */
-    function approve(address _spender, uint256 _value) public override returns (bool) {
+    function approve(address _spender, uint256 _value) external override returns (bool) {
         allowed[msg.sender][_spender] = _value;
         emit Approval(msg.sender, _spender, _value);
         return true;
@@ -164,7 +266,7 @@ contract StandardToken is ERC20, BasicToken {
      * @param _spender address The address which will spend the funds.
      * @return A uint256 specifying the amount of tokens still available for the spender.
      */
-    function allowance(address _owner, address _spender) public override view returns (uint256) {
+    function allowance(address _owner, address _spender) external override view returns (uint256) {
         return allowed[_owner][_spender];
     }
 
@@ -174,13 +276,13 @@ contract StandardToken is ERC20, BasicToken {
      * the first transaction is mined)
      * From MonolithDAO Token.sol
      */
-    function increaseApproval (address _spender, uint _addedValue) public returns (bool success) {
+    function increaseApproval (address _spender, uint _addedValue) external returns (bool) {
         allowed[msg.sender][_spender] = allowed[msg.sender][_spender].add(_addedValue);
         emit Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
         return true;
     }
 
-    function decreaseApproval (address _spender, uint _subtractedValue) public returns (bool success) {
+    function decreaseApproval (address _spender, uint _subtractedValue) external returns (bool) {
         uint oldValue = allowed[msg.sender][_spender];
         if (_subtractedValue > oldValue) {
             allowed[msg.sender][_spender] = 0;
@@ -200,15 +302,15 @@ contract StandardToken is ERC20, BasicToken {
  */
 library SafeERC20 {
     function safeTransfer(ERC20Basic token, address to, uint256 value) internal {
-        assert(token.transfer(to, value));
+        require(token.transfer(to, value));
     }
 
     function safeTransferFrom(ERC20 token, address from, address to, uint256 value) internal {
-        assert(token.transferFrom(from, to, value));
+        require(token.transferFrom(from, to, value));
     }
 
     function safeApprove(ERC20 token, address spender, uint256 value) internal {
-        assert(token.approve(spender, value));
+        require(token.approve(spender, value));
     }
 }
 
@@ -220,7 +322,7 @@ contract Owned {
     }
 
     modifier onlyOwner {
-        require(msg.sender == owner);
+        require(msg.sender == owner, "Ownable: caller is not the owner.");
         _;
     }
 }
@@ -272,8 +374,9 @@ contract TokenVesting is Owned {
     )
 
     {
-        require(_beneficiary != address(0));
-        require(_cliff <= _duration);
+        require(_beneficiary != address(0), "beneficiary is a zero address");
+        require(_realOwner != address(0), "real owner is a zero address");
+        require(_cliff <= _duration, "cliff timing should be less than duration");
 
         beneficiary = _beneficiary;
         revocable = _revocable;
@@ -290,9 +393,9 @@ contract TokenVesting is Owned {
     function release(ERC20Basic token) public {
         uint256 unreleased = releasableAmount(token);
 
-        require(unreleased > 0);
+        require(unreleased > 0, "Unreleased should be greater than zero");
 
-        released[address(this)] = released[address(this)].add(unreleased);
+        released[address(token)] = released[address(token)].add(unreleased);
 
         token.safeTransfer(beneficiary, unreleased);
 
@@ -304,9 +407,9 @@ contract TokenVesting is Owned {
      * remain in the contract, the rest are returned to the owner.
      * @param token ERC20 token which is being vested
      */
-    function revoke(ERC20Basic token) public onlyOwner {
-        require(revocable);
-        require(!revoked[address(token)]);
+    function revoke(ERC20Basic token) external onlyOwner {
+        require(revocable, "Should be revocable");
+        require(!revoked[address(token)], "Should not be revoked");
 
         uint256 balance = token.balanceOf(address(this));
 
@@ -358,6 +461,7 @@ contract TokenVault {
     ERC20 public token;
 
     constructor(ERC20 _token) {
+        require(address(_token) != address(0), "Token is zero address");
         token = _token;
     }
 
@@ -365,11 +469,11 @@ contract TokenVault {
      * @notice Allow the token itself to send tokens
      * using transferFrom().
      */
-    function fillUpAllowance() public {
+    function fillUpAllowance() external returns(bool){
         uint256 amount = token.balanceOf(address(this));
-        require(amount > 0);
-
+        require(amount > 0, "Amount is zero");
         token.approve(address(token), amount);
+        return true;
     }
 }
 
@@ -385,9 +489,9 @@ contract BurnableToken is StandardToken {
      * @dev Burns a specific amount of tokens.
      * @param _value The amount of token to be burned.
      */
-    function burn(uint256 _value) public {
-        require(_value > 0);
-        require(_value <= balances[msg.sender]);
+    function burn(uint256 _value) external {
+        require(_value > 0, "value is zero");
+        require(_value <= balances[msg.sender], "Not enough balance");
         // no need to require value <= totalSupply, since that would imply the
         // sender's balance is greater than the totalSupply, which *should* be an assertion failure
 
@@ -406,7 +510,7 @@ contract OndaToken is BurnableToken, Owned {
     uint8 public constant decimals = 18;
  
     /// Maximum tokens to be allocated ( 1 billion ONDA )
-    uint256 public constant HARD_CAP = 1000000000 * 10**uint256(decimals);
+    uint256 public constant HARD_CAP = 10**9 * 10**uint256(decimals);
 
     /// This address will be used to distribute the team, advisors and reserve tokens
     address public saleTokensAddress;
@@ -415,51 +519,57 @@ contract OndaToken is BurnableToken, Owned {
     TokenVault public reserveTokensVault;
 
     // Date when the vesting for regular users starts
-    uint64 internal daySecond     = 86400;
-    uint64 internal lock90Days    = 90;
-    uint64 internal unlock100Days = 100;
-    uint64 internal lock365Days   = 365;
+    uint64 internal constant daySecond     = 86400;
+    uint64 internal constant lock90Days    = 90;
+    uint64 internal constant unlock100Days = 100;
+    uint64 internal constant lock365Days   = 365;
 
     /// Store the vesting contract addresses for each sale contributor
     mapping(address => address) public vestingOf;
 
+    event CreatedTokenVault(address indexed account, uint256 value);
+    event VestedTokenDetails(address indexed _beneficiary, uint256 _startS, uint256 _cliffS, uint256 _durationS, bool _revocable, uint256 _tokensAmountInt);
+    event VestedTokenStartAt(address _beneficiary, 
+                            uint256 _tokensAmountInt,
+                            uint256 _startS,
+                            uint256 _afterDay,
+                            uint256 _cliffDay,
+                            uint256 _durationDay);
+
     constructor(address _saleTokensAddress) {
-        require(_saleTokensAddress != address(0));
+        require(_saleTokensAddress != address(0), "OndaToken: zero address");
 
         saleTokensAddress = _saleTokensAddress;
 
-        /// Maximum tokens to be sold - 369 million
-        createTokensInt(369000000, saleTokensAddress);
-
-        require(totalSupply_ <= HARD_CAP);
+        /// Maximum tokens to be sold - 369 million, tokenomics will be distributed from sale wallet
+        createTokensInt(369 * 10**6, saleTokensAddress);
     }
 
     /// @dev Create a ReserveTokenVault 
     function createReserveTokensVault() external onlyOwner {
-        require(address(reserveTokensVault) == address(0));
+        require(address(reserveTokensVault) == address(0), "OndaToken: reserve token vault is zero address");
 
         /// Reserve tokens - 631 million
-        reserveTokensVault = createTokenVaultInt(631000000);
-
-        require(totalSupply_ <= HARD_CAP);
+        reserveTokensVault = createTokenVaultInt(631*10**6);
     }
 
     /// @dev Create a TokenVault and fill with the specified newly minted tokens
-    function createTokenVaultInt(uint256 tokens) internal onlyOwner returns (TokenVault) {
+    function createTokenVaultInt(uint256 tokens) internal returns (TokenVault) {
         TokenVault tokenVault = new TokenVault(ERC20(this));
         createTokensInt(tokens, address(tokenVault));
         tokenVault.fillUpAllowance();
+        emit CreatedTokenVault(address(this), tokens);
         return tokenVault;
     }
 
     // @dev create specified number of tokens and transfer to destination
-    function createTokensInt(uint256 _tokens, address _destination) internal onlyOwner {
+    function createTokensInt(uint256 _tokens, address _destination) internal {
         uint256 tokens = _tokens * 10**uint256(decimals);
         totalSupply_ = totalSupply_.add(tokens);
         balances[_destination] = balances[_destination].add(tokens);
         emit Transfer(address(0), _destination, tokens);
 
-        require(totalSupply_ <= HARD_CAP);
+        require(totalSupply_ <= HARD_CAP, "OndaToken: hard cap reached");
     }
 
     /// @dev vest Detail : second unit
@@ -470,7 +580,7 @@ contract OndaToken is BurnableToken, Owned {
                         uint256 _durationS,
                         bool _revocable,
                         uint256 _tokensAmountInt) external onlyOwner {
-        require(_beneficiary != address(0));
+        require(_beneficiary != address(0), "beneficiary is zero address");
 
         uint256 tokensAmount = _tokensAmountInt * 10**uint256(decimals);
 
@@ -479,7 +589,8 @@ contract OndaToken is BurnableToken, Owned {
             vestingOf[_beneficiary] = address(vesting);
         }
 
-        require(this.transferFrom(address(reserveTokensVault), vestingOf[_beneficiary], tokensAmount));
+        emit VestedTokenDetails(_beneficiary, _startS, _cliffS, _durationS, _revocable, _tokensAmountInt);
+        require(this.transferFrom(address(reserveTokensVault), vestingOf[_beneficiary], tokensAmount), "transfer from failed");
     }
 
     /// @dev vest StartAt : day unit
@@ -490,7 +601,7 @@ contract OndaToken is BurnableToken, Owned {
                             uint256 _afterDay,
                             uint256 _cliffDay,
                             uint256 _durationDay ) public onlyOwner {
-        require(_beneficiary != address(0));
+        require(_beneficiary != address(0), "beneficiary is zero address");
 
         uint256 tokensAmount = _tokensAmountInt * 10**uint256(decimals);
         uint256 afterSec = _afterDay * daySecond;
@@ -502,7 +613,8 @@ contract OndaToken is BurnableToken, Owned {
             vestingOf[_beneficiary] = address(vesting);
         }
 
-        require(this.transferFrom(address(reserveTokensVault), vestingOf[_beneficiary], tokensAmount));
+        emit VestedTokenStartAt(_beneficiary, _tokensAmountInt, _startS, _afterDay, _cliffDay, _durationDay);
+        require(this.transferFrom(address(reserveTokensVault), vestingOf[_beneficiary], tokensAmount), "transfer from failed");
     }
 
     /// @dev vest function from now
@@ -536,7 +648,7 @@ contract OndaToken is BurnableToken, Owned {
     }
 
     /// @dev check the vested balance for an address
-    function lockedBalanceOf(address _owner) public view returns (uint256) {
+    function lockedBalanceOf(address _owner) external view returns (uint256) {
         return balances[vestingOf[_owner]];
     }
 
@@ -551,13 +663,13 @@ contract OndaToken is BurnableToken, Owned {
 
     /// @dev revoke vested tokens for the specified address.
     /// Tokens already vested remain in the contract, the rest are returned to the owner.
-    function revokeVestedTokensFor(address _owner) public onlyOwner {
+    function revokeVestedTokensFor(address _owner) external onlyOwner {
         TokenVesting(vestingOf[_owner]).revoke(this);
     }
 
     /// @dev Create a ReserveTokenVault 
     function makeReserveToVault() external onlyOwner {
-        require(address(reserveTokensVault) != address(0));
+        require(address(reserveTokensVault) != address(0), "reserve token vault is zero address");
         reserveTokensVault.fillUpAllowance();
     }
 
